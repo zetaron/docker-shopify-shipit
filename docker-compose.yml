@@ -1,0 +1,38 @@
+version: '2'
+
+services:
+  web:
+    image: zetaron/shopify-shipit
+    env_file:
+      - shipit.env
+      - postgres.env
+      - secrets.env
+    volumes:
+      - ./config/ssh:/root/.ssh:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - frontend
+      - shipit-backend
+    labels:
+      - ingress=true
+      - ingress.dnsname=shipit.zetaron.de
+      - ingress.targetport=3000
+  redis:
+    image: redis
+    networks:
+      - shipit-backend
+  postgres:
+    image: postgres
+    env_file:
+      - postgres.env
+    networks:
+      - shipit-backend
+
+networks:
+  shipit-backend:
+    driver: overlay
+  frontend:
+    external:
+      name: frontend
